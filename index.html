@@ -171,7 +171,6 @@ html, body {
 /* DESKTOP — side by side */
 @media (min-width:700px) {
   .page { flex-direction:row; align-items:flex-start; justify-content:center; gap:28px; padding:30px 24px; }
-  .flip-btn { display:none; }
   .scene { width:300px; height:490px; cursor:pointer; }
   .editor { width:300px; }
 }
@@ -250,7 +249,7 @@ html, body {
         </div>
       </div>
     </div>
-    <button class="flip-btn" id="flipBtn" onclick="flipCard()">↻ ПЕРЕВЕРНУТЬ КАРТОЧКУ</button>
+    <div style="color:rgba(198,160,74,.45);font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:3px;margin-top:12px;text-align:center;">← СВАЙП ИЛИ НАЖМИ →</div>
   </div>
 
   <!-- EDITOR -->
@@ -295,9 +294,38 @@ var scene=document.getElementById('scene');
 var keys=['pac','sho','pas','dri','def','phy'];
 
 // Desktop: click card to flip
+// Desktop: click to flip
 scene.addEventListener('click',function(){
   if(window.innerWidth>=700) flipCard();
 });
+
+// Mobile: tap OR swipe left/right to flip
+var touchStartX=0, touchStartY=0, touchMoved=false;
+
+scene.addEventListener('touchstart',function(e){
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  touchMoved = false;
+},{passive:true});
+
+scene.addEventListener('touchmove',function(e){
+  var dx = Math.abs(e.touches[0].clientX - touchStartX);
+  var dy = Math.abs(e.touches[0].clientY - touchStartY);
+  if(dx > 8 || dy > 8) touchMoved = true;
+},{passive:true});
+
+scene.addEventListener('touchend',function(e){
+  var dx = e.changedTouches[0].clientX - touchStartX;
+  var dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+  // Swipe left or right (horizontal > 40px, vertical < 60px)
+  if(Math.abs(dx) > 40 && dy < 60){
+    flipCard();
+  }
+  // Tap (barely moved)
+  else if(!touchMoved){
+    flipCard();
+  }
+},{passive:true});
 
 function flipCard(){
   flipped=!flipped;
